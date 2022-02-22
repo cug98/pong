@@ -68,32 +68,19 @@ void setup()
 
     if (rc != OLED_NOT_FOUND)
     {
-        char *msgs[] =
-        {
-          (char *)"SSD1306 @ 0x3C",
-          (char *)"SSD1306 @ 0x3D",
-          (char *)"SH1106 @ 0x3C",
-          (char *)"SH1106 @ 0x3D"
-        };
+      char *msgs[] =
+      {
+        (char *)"SSD1306 @ 0x3C",
+        (char *)"SSD1306 @ 0x3D",
+        (char *)"SH1106 @ 0x3C",
+        (char *)"SH1106 @ 0x3D"
+      };
 
-        oledFill(&ssoled, 0, 1);
-        oledWriteString(&ssoled, 0, 0, 0, (char *)"OLED found:", FONT_NORMAL, 0, 1);
-        oledWriteString(&ssoled, 0, 10, 2, msgs[rc], FONT_NORMAL, 0, 1);
-        delay(3000);
-
-
-        char set[] = "Sets: 0:0";
-        set[6] = set0 + '0';
-        set[8] = set1 + '0';
-    
-        char score[] = "0:0";
-        score[0] = score0 + '0';
-        score[2] = score1 + '0';
-        oledFill(&ssoled, 0, 1);
-        oledWriteString(&ssoled, 0, 16, 0, set, FONT_NORMAL, 0, 1);
-    
-        oledWriteString(&ssoled, 0, 16, 2,(char *)"Score:", FONT_NORMAL, 0, 1);
-        oledWriteString(&ssoled, 0, 40, 4, score, FONT_STRETCHED, 0, 1);
+      /*oledFill(&ssoled, 0, 1);
+      oledWriteString(&ssoled, 0, 0, 0, (char *)"OLED found:", FONT_NORMAL, 0, 1);
+      oledWriteString(&ssoled, 0, 10, 2, msgs[rc], FONT_NORMAL, 0, 1);
+      delay(3000);*/
+      updateDisplayStart();
     }
 }
 /*
@@ -173,7 +160,6 @@ void loop()
   }
   else 
   {
-    updateDisplayStart();
   }
 }
 
@@ -246,7 +232,7 @@ void updateDisplayStart()
   //TODO: show status for each player (ready / not ready)
   oledFill(&ssoled, 0, 1);
   oledWriteString(&ssoled, 0, 0, 0, (char *)"please press", FONT_NORMAL, 0, 1);
-  oledWriteString(&ssoled, 0, 0, 1, (char *)"any button", FONT_NORMAL, 0, 1);
+  oledWriteString(&ssoled, 0, 0, 1, (char *)"both buttons", FONT_NORMAL, 0, 1);
   oledWriteString(&ssoled, 0, 0, 2, (char *)"to start", FONT_NORMAL, 0, 1);
   oledWriteString(&ssoled, 0, 0, 3, (char *)"the game", FONT_NORMAL, 0, 1);
 }
