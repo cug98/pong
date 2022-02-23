@@ -208,6 +208,7 @@ STRIPE_show:
  ;Parameter R25, R24 (MSB, LSB)
 .global END_frame
 END_frame:
+  //TODO: add correct end_frame
   push R24
   mov TEMP,2;R24
   mov TEMP2,R25
