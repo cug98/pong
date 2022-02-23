@@ -26,8 +26,9 @@ int position = LED_NUM_MAX / 2;
 int direction = 1;
 int start_delay = 400;
 int current_delay = 400;
-bool p0ready = false;
-bool p1ready = false;
+bool p0ready = false, p1ready = false;
+bool updateDisplay = false;
+
 
 
 const byte interruptPin0 = 2;
@@ -68,7 +69,7 @@ void setup()
 
     if (rc != OLED_NOT_FOUND)
     {
-      char *msgs[] =
+      /*char *msgs[] =
       {
         (char *)"SSD1306 @ 0x3C",
         (char *)"SSD1306 @ 0x3D",
@@ -76,7 +77,7 @@ void setup()
         (char *)"SH1106 @ 0x3D"
       };
 
-      /*oledFill(&ssoled, 0, 1);
+      oledFill(&ssoled, 0, 1);
       oledWriteString(&ssoled, 0, 0, 0, (char *)"OLED found:", FONT_NORMAL, 0, 1);
       oledWriteString(&ssoled, 0, 10, 2, msgs[rc], FONT_NORMAL, 0, 1);
       delay(3000);*/
@@ -148,14 +149,17 @@ void loop()
     //LED - OFF
     //STRIPE_show(LED_NUM_MAX, 0, 0, 0, 0);
     //delay(500);
-    //TODO: nicht mehr aus interrupt raus, wenn in Interrupt display gesetzt wird?
     //scoreUser(0);
-    if(set0 < 2 && set1 < 2)
+    if(updateDisplay)
     {
-      updateDisplayGame();
-    }
-    else{
-      updateDisplayWinner();
+    if(set0 < 2 && set1 < 2)
+      {
+        updateDisplayGame();
+      }
+      else{
+        updateDisplayWinner();
+      }
+      updateDisplay = false;
     }
   }
   else 
@@ -178,6 +182,7 @@ void interrupt_user_0()
     }
   }
   p0ready = true;
+  updateDisplay = true;
 }
 
 void interrupt_user_1()
@@ -195,10 +200,12 @@ void interrupt_user_1()
     }
   }
   p1ready = true;
+  updateDisplay = true;
 }
 
 void scoreUser(int user)
 {
+  updateDisplay = true; // update score on display
   digitalWrite(11, HIGH);
   delay(300);
   digitalWrite(11, LOW);
@@ -220,6 +227,7 @@ void scoreUser(int user)
       set1++;
     }
   }
+
   STRIPE_show(LED_NUM_MAX - 1, 0, 0, 0, 0); //turn all LEDs off
   current_delay = start_delay; //reset speed
   direction = direction * -1; //change direction to scoring player
@@ -260,7 +268,8 @@ void updateDisplayWinner()
   oledFill(&ssoled, 0, 1);
   oledWriteString(&ssoled, 0, 16, 2,(char *)"Winner:", FONT_NORMAL, 0, 1);
   oledWriteString(&ssoled, 0, 0, 4, winner, FONT_STRETCHED, 0, 1);
-  p0ready, p1ready = false;
+  p0ready = false;
+  p1ready = false;
 }
 
 void initStripe()
