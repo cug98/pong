@@ -69,64 +69,9 @@ void setup()
 
     if (rc != OLED_NOT_FOUND)
     {
-      /*char *msgs[] =
-      {
-        (char *)"SSD1306 @ 0x3C",
-        (char *)"SSD1306 @ 0x3D",
-        (char *)"SH1106 @ 0x3C",
-        (char *)"SH1106 @ 0x3D"
-      };
-
-      oledFill(&ssoled, 0, 1);
-      oledWriteString(&ssoled, 0, 0, 0, (char *)"OLED found:", FONT_NORMAL, 0, 1);
-      oledWriteString(&ssoled, 0, 10, 2, msgs[rc], FONT_NORMAL, 0, 1);
-      delay(3000);*/
       updateDisplayStart();
     }
 }
-/*
-void loop()
-{
-  //LED-ON
-  //Start-Frame
-  STRIPE_com(0);
-  STRIPE_com(0);
-  STRIPE_com(0);
-  STRIPE_com(0);
-  //LED-Frame
-  STRIPE_com(0xE5); //Brigtness 5
-  STRIPE_com(0x0A); //Blue
-  STRIPE_com(0);    //Green
-  STRIPE_com(0);    //Red
-  //END-Frame
-  STRIPE_com(0);
-  delay(500);
-  //LED-OFF
-  //Start-Frame
-  STRIPE_com(0);
-  STRIPE_com(0);
-  STRIPE_com(0);
-  STRIPE_com(0);
-  //LED-Frame
-  STRIPE_com(0xE0); //Brigtness 0
-  STRIPE_com(0);    //Blue
-  STRIPE_com(0);    //Green
-  STRIPE_com(0);    //Red
-  //END-Frame
-  STRIPE_com(0);
-  delay(500);
-}*/
-/*
-void loop()
-{
-  //LED - ON
-  STRIPE_show(LED_NUM_MAX - 1, 0, 0, 10, 5);
-  STRIPE_show(0, 0, 0, 10, 5);
-  delay(500);
-  //LED - OFF
-  STRIPE_show(LED_NUM_MAX, 0, 0, 0, 0);
-  delay(500);
-}*/
 
 void loop()
 {
@@ -270,6 +215,8 @@ void updateDisplayWinner()
   oledWriteString(&ssoled, 0, 0, 4, winner, FONT_STRETCHED, 0, 1);
   p0ready = false;
   p1ready = false;
+  set0 = 0;
+  set1 = 0;
 }
 
 void initStripe()
