@@ -25,7 +25,7 @@ long int set0 = 0, set1 = 0;
 int position = LED_NUM_MAX / 2;
 int direction = 1;
 int start_delay = 400;
-int current_delay = 400;
+int current_delay = start_delay;
 bool p0ready = false, p1ready = false;
 bool updateDisplay = false;
 
@@ -119,7 +119,7 @@ void interrupt_user_0()
     if(position == LED_NUM_MAX - 1 || position == LED_NUM_MAX - 2)
     {
       direction = direction * -1;
-      current_delay -= 50;
+      increase_speed();
     }
     else
     {
@@ -137,7 +137,7 @@ void interrupt_user_1()
     if(position == 0 || position == 1)
     {
       direction = direction * -1;
-      current_delay -= 50;
+      increase_speed();
     }
     else
     {
@@ -146,6 +146,14 @@ void interrupt_user_1()
   }
   p1ready = true;
   updateDisplay = true;
+}
+
+void increase_speed()
+{
+  if(current_delay >= 100)
+  {
+    current_delay -= 50;
+  }
 }
 
 void scoreUser(int user)
