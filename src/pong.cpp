@@ -58,10 +58,6 @@ void interrupt_user_1(void);
 
 
 
-/*void setup()
-{
-  initStripe();
-}*/
 void setup()
 {
     initStripe();
@@ -83,7 +79,8 @@ void loop()
     STRIPE_show(position, 0, 0, 0, 0);//turn LED off
     position += direction; //change position
     STRIPE_show(position, 0, 0, 10, 5); // turn LED on
-    //STRIPE_show(0, 0, 0, 10, 5);
+    
+    //if out of bounds
     if(position <= 0)
     {
       scoreUser(0);
@@ -94,10 +91,8 @@ void loop()
     }
     
     delay(current_delay);
-    //LED - OFF
-    //STRIPE_show(LED_NUM_MAX, 0, 0, 0, 0);
-    //delay(500);
-    //scoreUser(0);
+    
+    //flag for updatig display to avoid unnecessary refreshes
     if(updateDisplay)
     {
     if(set0 < 2 && set1 < 2)
@@ -110,13 +105,11 @@ void loop()
       updateDisplay = false;
     }
   }
-  else 
-  {
-  }
 }
 
 void interrupt_user_0()
 {
+  //if during game and switch was not activited during the last 500ms
   if(p0ready && p1ready && millis() - interrupt0Zeit > prellZeit)
   {
     if(position == LED_NUM_MAX - 1 || position == LED_NUM_MAX - 2)
@@ -136,6 +129,7 @@ void interrupt_user_0()
 
 void interrupt_user_1()
 {
+  //if during game and switch was not activited during the last 500ms
   if(p0ready && p1ready && millis() - interrupt1Zeit > prellZeit)
   {
     if(position == 0 || position == 1)
@@ -164,9 +158,13 @@ void increase_speed()
 void scoreUser(int user)
 {
   updateDisplay = true; // update score on display
+  
+  //trigger buzzer
   digitalWrite(11, HIGH);
   delay(300);
   digitalWrite(11, LOW);
+
+  //handle which user scored
   if(user == 0)
   {
     score0++;
@@ -193,6 +191,7 @@ void scoreUser(int user)
   return;
 }
 
+//display intro screen
 void updateDisplayStart()
 {
   oledFill(&ssoled, 0, 1);
@@ -202,6 +201,7 @@ void updateDisplayStart()
   oledWriteString(&ssoled, 0, 0, 3, (char *)"the game", FONT_NORMAL, 0, 1);
 }
 
+//display game screen
 void updateDisplayGame()
 {
   char set[] = "Sets: 0:0";
@@ -219,6 +219,7 @@ void updateDisplayGame()
   return;
 }
 
+//display winning screen
 void updateDisplayWinner()
 {
   char * winner = (set0 >= 2) ? (char *) "Player 1" : (char *) "Player 2";
@@ -230,7 +231,7 @@ void updateDisplayWinner()
   set0 = 0;
   set1 = 0;
 }
-
+ 
 void initStripe()
 {
   pinMode(51, OUTPUT); //  DDRB |= (1 << PB2);//OUTPUT MOSI
