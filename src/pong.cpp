@@ -195,7 +195,6 @@ void scoreUser(int user)
 
 void updateDisplayStart()
 {
-  //TODO: show status for each player (ready / not ready)
   oledFill(&ssoled, 0, 1);
   oledWriteString(&ssoled, 0, 0, 0, (char *)"please press", FONT_NORMAL, 0, 1);
   oledWriteString(&ssoled, 0, 0, 1, (char *)"both buttons", FONT_NORMAL, 0, 1);

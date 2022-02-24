@@ -38,8 +38,7 @@ STRIPE_com: ; am besten register r24 vom stack poppen und kopieren
  
   clr TEMP
   start_loop:
-    //TODO: use loop with an AND to shorten function?
-    //shift von R24 nach jedem Schleifenaufruf#
+    //shift von R24 nach jedem Schleifenaufruf
 
     ;überspringe befehl wenn bit gelöscht ist
     sbrc R24,7
@@ -151,8 +150,6 @@ STRIPE_show:
  ;Parameter R25, R24 (MSB, LSB)
 .global END_frame
 END_frame:
-  //TODO: add correct end_frame
-  //idea: rightshift
   push R24
   push R25
   push TEMP ;save carry
