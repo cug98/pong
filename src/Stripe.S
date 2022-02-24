@@ -6,7 +6,6 @@
 #define TEMP R17
 #define TEMP2 R25
 #define TEMP3 R19
-#define TEMP4 R26
 #define TEMP_LOW R30
 #define TEMP_HIGH R31
 
@@ -29,14 +28,19 @@ clock_short:
 .global STRIPE_com
 STRIPE_com: ; am besten register r24 vom stack poppen und kopieren
   ;setze externen clock und datenleitung und buzzer auf output
-  ldi TEMP4, (1<<DDB1) | (1<<DDB2) | (1<<DDB5)
-  out DDRB,TEMP4
+  push TEMP
+  push R24
+  ldi TEMP, (1<<DDB1) | (1<<DDB2) | (1<<DDB5)
+  out DDRB,TEMP
 
   ; einzelne bits auslesen und seriell auf die datenleitung schreiben
   ; verundung der register
  
-
+  clr TEMP
+  start_loop:
     //TODO: use loop with an AND to shorten function?
+    //shift von R24 nach jedem Schleifenaufruf#
+
     ;überspringe befehl wenn bit gelöscht ist
     sbrc R24,7
     sbi PORTB,PB2
@@ -44,80 +48,17 @@ STRIPE_com: ; am besten register r24 vom stack poppen und kopieren
     ;überspringe wenn bit gesetzt ist
     sbrs R24,7
     cbi PORTB,PB2
-
+    
     call clock_short
+    
+    lsl R24
+    inc TEMP
+    cpi TEMP, 8
+    brne start_loop
 
-    ;überspringe befehl wenn bit gelöscht ist
-    sbrc R24,6
-    sbi PORTB,PB2
-
-
-    ;überspringe wenn bit gesetzt ist
-    sbrs R24,6
-    cbi PORTB,PB2
-    call clock_short
-
-    ;überspringe befehl wenn bit gelöscht ist
-    sbrc R24,5
-    sbi PORTB,PB2
-
-
-    ;überspringe wenn bit gesetzt ist
-    sbrs R24,5
-    cbi PORTB,PB2
-    call clock_short
-
-    ;überspringe befehl wenn bit gelöscht ist
-    sbrc R24,4
-    sbi PORTB,PB2
-
-
-    ;überspringe wenn bit gesetzt ist
-    sbrs R24,4
-    cbi PORTB,PB2
-    call clock_short
-
-    ;überspringe befehl wenn bit gelöscht ist
-    sbrc R24,3
-    sbi PORTB,PB2
-
-    ;überspringe wenn bit gesetzt ist
-    sbrs R24,3
-    cbi PORTB,PB2
-    call clock_short
-
-    ;überspringe befehl wenn bit gelöscht ist
-    sbrc R24,2
-    sbi PORTB,PB2
-
-    ;überspringe wenn bit gesetzt ist
-    sbrs R24,2
-    cbi PORTB,PB2
-    call clock_short
-
-    ;überspringe befehl wenn bit gelöscht ist
-    sbrc R24,1
-    sbi PORTB,PB2
-
-
-    ;überspringe wenn bit gesetzt ist
-    sbrs R24,1
-    cbi PORTB,PB2
-    call clock_short
-
-    ;überspringe befehl wenn bit gelöscht ist
-    sbrc R24,0
-    sbi PORTB,PB2
-
-
-    ;überspringe wenn bit gesetzt ist
-    sbrs R24,0
-    cbi PORTB,PB2
-    call clock_short
-
- 
-
-  ret
+  pop R24
+  pop TEMP
+ret
 
 ; STRIPE_show: sets a single pixel to the specified color (and switches off all others before it)
 ; Parameter: r25-r16

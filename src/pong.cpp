@@ -48,6 +48,7 @@ void scoreUser(int);
 void updateDisplayGame(void);
 void updateDisplayWinner(void);
 void updateDisplayStart(void);
+void increase_speed(void);
 
 
 void interrupt_user_0(void);
@@ -81,7 +82,7 @@ void loop()
     position += direction; //change position
     STRIPE_show(position, 0, 0, 10, 5); // turn LED on
     //STRIPE_show(0, 0, 0, 10, 5);
-    if(position < 0)
+    if(position <= 0)
     {
       scoreUser(0);
     }
