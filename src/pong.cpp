@@ -28,7 +28,9 @@ int start_delay = 400;
 int current_delay = start_delay;
 bool p0ready = false, p1ready = false;
 bool updateDisplay = false;
-
+unsigned int prellZeit = 500;
+unsigned int interrupt0Zeit = 0;
+unsigned int interrupt1Zeit = 0;
 
 
 const byte interruptPin0 = 2;
@@ -115,7 +117,7 @@ void loop()
 
 void interrupt_user_0()
 {
-  if(p0ready && p1ready)
+  if(p0ready && p1ready && millis() - interrupt0Zeit > prellZeit)
   {
     if(position == LED_NUM_MAX - 1 || position == LED_NUM_MAX - 2)
     {
@@ -126,6 +128,7 @@ void interrupt_user_0()
     {
       scoreUser(1);
     }
+    interrupt0Zeit = millis();
   }
   p0ready = true;
   updateDisplay = true;
@@ -133,7 +136,7 @@ void interrupt_user_0()
 
 void interrupt_user_1()
 {
-  if(p0ready && p1ready)
+  if(p0ready && p1ready && millis() - interrupt1Zeit > prellZeit)
   {
     if(position == 0 || position == 1)
     {
@@ -144,6 +147,7 @@ void interrupt_user_1()
     {
       scoreUser(0);
     }
+    interrupt1Zeit = millis();
   }
   p1ready = true;
   updateDisplay = true;
