@@ -7,6 +7,8 @@
 #define TEMP2 R25
 #define TEMP3 R19
 #define TEMP4 R26
+#define TEMP_LOW R30
+#define TEMP_HIGH R31
 
 #include "avr/io.h"
 
@@ -201,60 +203,67 @@ STRIPE_show:
     pop R24
     pop R25
     call END_frame
-    ret
+  ret
 
 
- ;END_frame: implements the variable bytes for the End-Frame
+  ;END_frame: implements the variable bytes for the End-Frame
  ;Parameter R25, R24 (MSB, LSB)
 .global END_frame
 END_frame:
   //TODO: add correct end_frame
+  //idea: rightshift
   push R24
-  mov TEMP,2;R24
-  mov TEMP2,R25
+  push R25
+  push TEMP ;save carry
+  push TEMP2 ;count divisions
+  push TEMP_LOW
+  push TEMP_HIGH
 
-  ldi R24,0
+  mov TEMP_LOW,R24
+  mov TEMP_HIGH,R25
 
-  ser TEMP3
+  clr TEMP;save carry
+  clr TEMP2;count divisions by two
+  clr R24; send 0-bytes
 
-  msb_and_lsb_loop1:
-  cpi TEMP2,0 ; wenn msb nicht leer ist zähle temp3 also 0xFF herunter
-  brne temp3_loop1
-  cpi TEMP,0 ; wenn msb leer ist zähle temp herunter
-  brne temp_loop1
-  rjmp done1
+  sbiw TEMP_LOW,1 ;substract 1
 
+  ;divide by 16 (by 2 four times)
+  divide_loop:
+    lsr TEMP_HIGH
+    ror TEMP_LOW
+    inc TEMP2
+    brcc dangling_carry
+    rjmp round_up
+  ;save carry if necessary
+  dangling_carry:
+    ldi TEMP, 1
+    cpi TEMP2, 4
+    brne divide_loop
 
-  temp3_loop1:
-    subi TEMP2,1
-    ser TEMP3
-    inner_loop1:
-    cpi TEMP3,0
-    breq msb_and_lsb_loop1
+  ;add one if carry is set
+  round_up:
+  cpi TEMP, 1
+  brne send_loop
+  adiw TEMP_LOW,1 
 
-    ;END FRAME
-
+  ;send 0-byte while TEMP_HIGH != 0 || TEMP_LOW != 0
+  send_loop:
     call STRIPE_com
+    sbiw TEMP_LOW,1
 
-    subi TEMP3,1
-
-    rjmp inner_loop1
-
-  temp_loop1:
-    cpi TEMP,0
-    breq done1
-
-    ;END FRAME
+    cpi TEMP_HIGH, 0
+    brne send_loop
+    cpi TEMP_LOW, 0
+    brne send_loop
     
-    call STRIPE_com
-
-    subi TEMP,1; schleife verkleinern
-
-    rjmp temp_loop1
-
-  done1:
+  pop TEMP_HIGH
+  pop TEMP_LOW
+  pop TEMP2
+  pop TEMP
+  pop R25
   pop R24
-  ret
+ret
  
 
  
