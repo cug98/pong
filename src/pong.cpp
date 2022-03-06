@@ -140,42 +140,50 @@ void loop()
 
 void interrupt_user_0()
 {
-  //falls Spiel läuft und der Switch nicht innerhalb der letzten 500ms aktiviert wurde
-  if(p0ready && p1ready && millis() - interrupt0Zeit > prellZeit)
+  //falls Switch nicht innerhalb der letzten 500ms aktiviert wurde (prellen)
+  if(millis() - interrupt0Zeit > prellZeit)
   {
-    if(position == LED_NUM_MAX - 1 || position == LED_NUM_MAX - 2)
+    //falls Spiel läuft
+    if(p0ready && p1ready)
     {
-      direction = direction * -1;
-      increase_speed();
-    }
-    else
-    {
-      scoreUser(1);
+      if(position == LED_NUM_MAX - 1 || position == LED_NUM_MAX - 2)
+      {
+        direction = direction * -1;
+        increase_speed();
+      }
+      else
+      {
+        scoreUser(1);
+      }
     }
     interrupt0Zeit = millis();
+    p0ready = true;
+    updateDisplay = true;
   }
-  p0ready = true;
-  updateDisplay = true;
 }
 
 void interrupt_user_1()
 {
-  //falls Spiel läuft und der Switch nicht innerhalb der letzten 500ms aktiviert wurde
-  if(p0ready && p1ready && millis() - interrupt1Zeit > prellZeit)
+  //falls Switch nicht innerhalb der letzten 500ms aktiviert wurde (prellen)
+  if(millis() - interrupt1Zeit > prellZeit)
   {
-    if(position == 0 || position == 1)
+    //falls Spiel läuft
+    if(p0ready && p1ready)
     {
-      direction = direction * -1;
-      increase_speed();
-    }
-    else
-    {
-      scoreUser(0);
+      if(position == 0 || position == 1)
+      {
+        direction = direction * -1;
+        increase_speed();
+      }
+      else
+      {
+        scoreUser(0);
+      }
     }
     interrupt1Zeit = millis();
+    p1ready = true;
+    updateDisplay = true;
   }
-  p1ready = true;
-  updateDisplay = true;
 }
 
 void increase_speed()

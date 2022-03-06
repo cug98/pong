@@ -10,8 +10,7 @@
 ;0x20 from I/O addresses
 #define __SFR_OFFSET 0
 #define TEMP R17
-#define TEMP2 R25
-#define TEMP3 R19
+#define TEMP2 R19
 #define TEMP_LOW R30
 #define TEMP_HIGH R31
 
@@ -76,16 +75,12 @@ STRIPE_show:
   ;register saven
   push TEMP
   push TEMP2
-  push TEMP3
   push R24
   push R25
-
-
+ 
   mov TEMP, R24 
   mov TEMP2,R25
 
-  ;setze temp3 auf max
-  ser TEMP3
 
   ;start frame
   ldi R24, 0 
@@ -95,19 +90,17 @@ STRIPE_show:
   call STRIPE_com
 
 
-
-  msb_and_lsb_loop:
-  ;überprüfe Zähler
-  cpi TEMP2,0
-  brne temp_loop
-  cpi TEMP,0
-  brne temp_loop
-  rjmp done
+  m_loop:
+    msb_and_lsb_loop:
+    ;überprüfe Zähler
+    cpi TEMP,0
+    brne temp_loop
+    cpi TEMP2,0
+    brne temp_loop
+    rjmp done
 
 
   temp_loop:
-    cpi TEMP,0
-    breq done
 
     ;LED FRAME für ausgeschaltete LEDs
     ldi R24, 0xE0  //Helligkeit auf 0
@@ -119,7 +112,7 @@ STRIPE_show:
 
     subi TEMP,1; schleife verkleinern
 
-    rjmp temp_loop
+    rjmp m_loop
 
   
   done:
@@ -133,14 +126,12 @@ STRIPE_show:
     call STRIPE_com
     mov R24,R22  ;red
     call STRIPE_com
+    
 
-
-    pop R25
     pop R24
-    pop TEMP3
+    pop R25
     pop TEMP2
     pop TEMP
-
     call END_frame
   ret
 
@@ -200,34 +191,5 @@ END_frame:
   pop TEMP2
   pop TEMP
   pop R25
-  pop R24
-ret
- 
-
- .global red_LED
-red_LED:
-  push R24
-  //LED-ON
-  //Start-Frame
-  ldi R24, 0
-  call STRIPE_com
-  call STRIPE_com
-  call STRIPE_com
-  call STRIPE_com
-  //LED-Frame
-  ldi R24, 0xE5 //Brigtness 5
-  call STRIPE_com
-  
-  ldi R24, 0x00 //Blue
-  call STRIPE_com
-  
-  ldi R24, 0x0 //Green
-  call STRIPE_com
-
-  ldi R24, 0x0A //Red
-  call STRIPE_com
-
-  //END-Frame
-  call STRIPE_com 
   pop R24
 ret
