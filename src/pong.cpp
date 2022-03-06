@@ -1,5 +1,13 @@
 /*
-* your comment
+* Implementation eines 1D-Pong Spieles im Rahmen der Übung zu Eingebettete Systene WT2022
+* 
+* Spielablauf: Zum Starten des Spieles müüsen nacheinander SW1 und SW2 gedrückt werden. Um den Ball zurückzuspielen,
+* muss der entsprechende Switch getriggert werden, sobald der Ball sich auf den letzten beiden 2 LEDs befindet.
+* Ein Spiel endet, sobald ein Spieler 2 Sätze gewonnen hat, wobei ein Satz aus 10 Punkten besteht
+* 
+* Abgabe von Übungsgruppe 1, Gruppe 9:
+* Maximilian Filzer, Matrikelnummer: 1196756
+* Christian Galda, Matrikelnummer: 1224466
 */
 
 #include <Arduino.h>
@@ -8,6 +16,7 @@
 
 #define LED_NUM_MAX 30
 
+//Display config
 SSOLED ssoled;
 #define SDA_PIN -1
 #define SCL_PIN -1
@@ -20,27 +29,31 @@ SSOLED ssoled;
 // Use the default Wire library
 #define USE_HW_I2C 1
 
+//Speichern des Punktestandes
 long int score0 = 0, score1 = 0;
 long int set0 = 0, set1 = 0;
+
+//Variablen für Spielablauf
 int position = LED_NUM_MAX / 2;
 int direction = 1;
 int start_delay = 400;
 int current_delay = start_delay;
+
+//Flags für Programmablauf
 bool p0ready = false, p1ready = false;
 bool updateDisplay = false;
+
+//timestamps zum Prellen der Switches
 unsigned int prellZeit = 500;
 unsigned int interrupt0Zeit = 0;
 unsigned int interrupt1Zeit = 0;
-
-
-const byte interruptPin0 = 2;
-const byte interruptPin1 = 3;
 
 extern "C"
 {
   // function prototypes
   void STRIPE_show(uint16_t index, char r, char g, char b, char bright);
   void STRIPE_com(uint8_t one_byte);
+  void red_LED(void);
 }
 
 void initStripe(void);
@@ -60,9 +73,14 @@ void interrupt_user_1(void);
 
 void setup()
 {
+    //initialisierung des LED-Streifens
     initStripe();
+
+    //Definieren der Interrupt-Funktionen
     attachInterrupt(digitalPinToInterrupt(2), interrupt_user_0, RISING);
     attachInterrupt(digitalPinToInterrupt(3), interrupt_user_1, RISING);
+    
+    //Display config
     int rc;
     rc = oledInit(&ssoled, OLED_128x64, OLED_ADDR, FLIP180, INVERT, USE_HW_I2C, SDA_PIN, SCL_PIN, RESET_PIN, 400000L);       // Standard HW I2C bus at 400Khz
 
@@ -76,23 +94,33 @@ void loop()
 {
   if(p0ready && p1ready)
   {  
-    STRIPE_show(position, 0, 0, 0, 0);//turn LED off
-    position += direction; //change position
-    STRIPE_show(position, 0, 0, 10, 5); // turn LED on
+    STRIPE_show(position, 0, 0, 0, 0);//schalte LED aus
+    position += direction; //ändere Position der LED
+    STRIPE_show(position, 0, 0, 10, 5); //schalte LED an
     
-    //if out of bounds
+    //falls im Aus
     if(position <= 0)
     {
+      //Buzzer
+      digitalWrite(11, HIGH);
+      delay(300);
+      digitalWrite(11, LOW);
+      
       scoreUser(0);
     }
     else if (position >= LED_NUM_MAX)
     {
+      //Buzzer
+      digitalWrite(11, HIGH);
+      delay(300);
+      digitalWrite(11, LOW);
+      
       scoreUser(1);
     }
     
     delay(current_delay);
     
-    //flag for updatig display to avoid unnecessary refreshes
+    //Flag, um unnötiges Updaten des Displays zu vermeiden
     if(updateDisplay)
     {
     if(set0 < 2 && set1 < 2)
@@ -107,9 +135,12 @@ void loop()
   }
 }
 
+
+
+
 void interrupt_user_0()
 {
-  //if during game and switch was not activited during the last 500ms
+  //falls Spiel läuft und der Switch nicht innerhalb der letzten 500ms aktiviert wurde
   if(p0ready && p1ready && millis() - interrupt0Zeit > prellZeit)
   {
     if(position == LED_NUM_MAX - 1 || position == LED_NUM_MAX - 2)
@@ -129,7 +160,7 @@ void interrupt_user_0()
 
 void interrupt_user_1()
 {
-  //if during game and switch was not activited during the last 500ms
+  //falls Spiel läuft und der Switch nicht innerhalb der letzten 500ms aktiviert wurde
   if(p0ready && p1ready && millis() - interrupt1Zeit > prellZeit)
   {
     if(position == 0 || position == 1)
@@ -157,17 +188,15 @@ void increase_speed()
 
 void scoreUser(int user)
 {
-  updateDisplay = true; // update score on display
+  updateDisplay = true; // update Score auf Display
   
-  //trigger buzzer
-  digitalWrite(11, HIGH);
-  delay(300);
-  digitalWrite(11, LOW);
-
-  //handle which user scored
+  //abhängig davon, welcher User gepunktet hat
   if(user == 0)
   {
     score0++;
+    direction = 1; //ändere Richtung in Richtung des scoring players
+    
+    //falls Satz gewonnen
     if(score0 > 9){
       score0 = 0;
       score1 = 0;
@@ -177,6 +206,9 @@ void scoreUser(int user)
   else
   {
     score1++;
+    direction = -1; //change direction towards scoring player
+
+    //falls Satz gewonnen
     if(score1 > 9){
       score0 = 0;
       score1 = 0;
@@ -184,14 +216,13 @@ void scoreUser(int user)
     }
   }
 
-  STRIPE_show(LED_NUM_MAX - 1, 0, 0, 0, 0); //turn all LEDs off
-  current_delay = start_delay; //reset speed
-  direction = direction * -1; //change direction to scoring player
-  position = LED_NUM_MAX / 2; //LED starts in the middle
+  STRIPE_show(LED_NUM_MAX - 1, 0, 0, 0, 0); //schalte alle LEDs aus
+  current_delay = start_delay; //reset Geschwindigkeit
+  position = LED_NUM_MAX / 2; //LED startet in der Mitte
   return;
 }
 
-//display intro screen
+//Startbildschirm
 void updateDisplayStart()
 {
   oledFill(&ssoled, 0, 1);
@@ -201,7 +232,7 @@ void updateDisplayStart()
   oledWriteString(&ssoled, 0, 0, 3, (char *)"the game", FONT_NORMAL, 0, 1);
 }
 
-//display game screen
+//Spielbildschirm mit aktuellem Punktestand
 void updateDisplayGame()
 {
   char set[] = "Sets: 0:0";
@@ -219,7 +250,7 @@ void updateDisplayGame()
   return;
 }
 
-//display winning screen
+//Endbildschirm mit Anzeige des Gewinners
 void updateDisplayWinner()
 {
   char * winner = (set0 >= 2) ? (char *) "Player 1" : (char *) "Player 2";
